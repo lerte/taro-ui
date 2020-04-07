@@ -1,3 +1,4 @@
+import _chunk from 'lodash/chunk'
 import classNames from 'classnames'
 import PropTypes, { InferProps } from 'prop-types'
 import { AtImagePickerProps, File } from 'types/image-picker'
@@ -7,38 +8,18 @@ import AtComponent from '../../common/component'
 import { uuid } from '../../common/utils'
 
 interface MatrixFile extends Partial<File> {
-  type: 'blank' | 'btn'
+  type: 'btn'
   uuid: string
 }
 
-// 生成 jsx 二维矩阵
+// 参照grid，用lodash的_chunk
 const generateMatrix = (
   files: MatrixFile[],
-  col: number,
+  rowLength: number,
   showAddBtn: boolean
 ) => {
-  const matrix: Array<MatrixFile>[] = []
-  const length = showAddBtn ? files.length + 1 : files.length
-  const row = Math.ceil(length / col)
-  for (let i = 0; i < row; i++) {
-    if (i === row - 1) {
-      // 最后一行数据加上添加按钮
-      const lastArr = files.slice(i * col)
-      if (lastArr.length < col) {
-        if (showAddBtn) {
-          lastArr.push({ type: 'btn', uuid: uuid() })
-        }
-        // 填补剩下的空列
-        for (let j = lastArr.length; j < col; j++) {
-          lastArr.push({ type: 'blank', uuid: uuid() })
-        }
-      }
-      matrix.push(lastArr)
-    } else {
-      matrix.push(files.slice(i * col, (i + 1) * col))
-    }
-  }
-  return matrix
+  const matrix = showAddBtn ? [...files, {type: 'btn'}] : files
+  return _chunk(matrix, rowLength)
 }
 
 const ENV = Taro.getEnv()
